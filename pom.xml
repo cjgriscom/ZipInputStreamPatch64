@@ -12,7 +12,14 @@
 		TODO
 	</description>
 	<licenses>
-		
+		<license>
+			<name>MIT License</name>
+			<url>https://opensource.org/licenses/MIT</url>
+		</license>
+		<license>
+			<name>Public Domain (CC0)</name>
+			<url>https://creativecommons.org/publicdomain/zero/1.0/legalcode</url>
+		</license>
 	</licenses>
 	<developers>
 		<developer>
