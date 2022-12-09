@@ -4,12 +4,12 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>io.chandler</groupId>
 	<artifactId>ZipInputStreamPatch64</artifactId>
-	<version>0.0.1-SNAPSHOT</version>
+	<version>1.0.0</version>
 	<name>ZipInputStreamPatch64</name>
 	<url>https://github.com/cjgriscom/ZipInputStreamPatch64</url>
 	<inceptionYear>2022</inceptionYear>
 	<description>
-		TODO
+		Patch correcting a ZipInputStream bug related to ZIP64 data descriptors and small files
 	</description>
 	<licenses>
 		<license>
