@@ -1,5 +1,6 @@
 package io.chandler.zip.patch64;
 
+import java.io.EOFException;
 import java.io.FilterInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -7,6 +8,8 @@ import java.io.PushbackInputStream;
 import java.lang.reflect.Field;
 import java.nio.charset.Charset;
 import java.util.zip.CRC32;
+import java.util.zip.Inflater;
+import java.util.zip.InflaterInputStream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipException;
 import java.util.zip.ZipInputStream;
@@ -68,17 +71,8 @@ public class ZipInputStreamPatch64 extends ZipInputStream {
 
   private static void hotfixZip64(ZipInputStream zis, ZipEntry ze) throws IOException {
     try {
-      // Verify CRC manually
-      Field f = ZipInputStream.class.getDeclaredField("crc");
-      f.setAccessible(true);
-      CRC32 crc = (CRC32) f.get(zis);
-      if (ze.getCrc() != crc.getValue()) {
-        throw new ZipException("invalid entry CRC (expected 0x" + Long.toHexString(ze.getCrc()) +
-                               " but got 0x" + Long.toHexString(crc.getValue()) + ")");
-      }
-      
       // Close the entry manually
-      f = ZipInputStream.class.getDeclaredField("entryEOF");
+      Field f = ZipInputStream.class.getDeclaredField("entryEOF");
       f.setAccessible(true);
       f.set(zis, true);
       f = ZipInputStream.class.getDeclaredField("entry");
@@ -89,7 +83,41 @@ public class ZipInputStreamPatch64 extends ZipInputStream {
       Field inF = FilterInputStream.class.getDeclaredField("in"); inF.setAccessible(true);
       PushbackInputStream in = (PushbackInputStream) inF.get(zis);
       
-      for (int i = 0; i < 8; i++) in.read(); // Read 8 extra bytes to compensate footer
+      // Read 8 extra bytes to compensate misalignment, and use them to validate uncompressed size
+      long usize = 0;
+      for (int i = 0; i < 8; i++) {
+        int byt = in.read(); // Read 8 extra bytes to compensate footer
+        if (byt < 0) throw new EOFException();
+        usize >>>= 8;
+        usize |= ((long)(byt & 0xFF)) << 56;
+      }
+      
+      // Correct ZipEntry's size
+      ze.setSize(usize);
+
+      // Grab the Inflater
+      f = InflaterInputStream.class.getDeclaredField("inf");
+      f.setAccessible(true);
+      Inflater inf = (Inflater) f.get(zis);
+      
+      // Re-check for errors
+      if (ze.getSize() != inf.getBytesWritten()) {
+        throw new ZipException("invalid entry size (expected " + ze.getSize() +
+                               " but got " + inf.getBytesWritten() + " bytes)");
+      }
+      if (ze.getCompressedSize() != inf.getBytesRead()) {
+        throw new ZipException("invalid entry compressed size (expected " + ze.getCompressedSize() +
+                               " but got " + inf.getBytesRead() + " bytes)");
+      }
+      
+      // Verify CRC manually
+      f = ZipInputStream.class.getDeclaredField("crc");
+      f.setAccessible(true);
+      CRC32 crc = (CRC32) f.get(zis);
+      if (ze.getCrc() != crc.getValue()) {
+        throw new ZipException("invalid entry CRC (expected 0x" + Long.toHexString(ze.getCrc()) +
+                               " but got 0x" + Long.toHexString(crc.getValue()) + ")");
+      }
       
     } catch (NoSuchFieldException | IllegalAccessException | RuntimeException e) {
       throw new IOException("Failed to correct ZipInputStream bug", e);
