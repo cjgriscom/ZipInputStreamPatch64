@@ -1,5 +1,7 @@
 # ZipInputStreamPatch64
 
+[![Maven Central](https://maven-badges.herokuapp.com/maven-central/io.chandler/ZipInputStreamPatch64/badge.svg)](https://maven-badges.herokuapp.com/maven-central/io.chandler/ZipInputStreamPatch64)
+
 A bug in Java's ``ZipInputStream`` causes it to choke on certain ZIP records under the following circumstances:
  - File size and compressed size are under 4 GiB
  - The local file header is ZIP64-encoded
@@ -29,3 +31,14 @@ This patch is tested and working on JDK 8 and 11.  Currently it fails on newer J
 
 The code for this patch is dual-licensed under either the MIT license or public domain (CC0), at the user's discretion.
 
+## Maven
+
+The patch is available through Maven Central:
+
+```xml
+<dependency>
+    <groupId>io.chandler</groupId>
+    <artifactId>ZipInputStreamPatch64</artifactId>
+    <version>1.0.0</version>
+</dependency>
+```
