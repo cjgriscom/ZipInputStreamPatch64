@@ -19,7 +19,7 @@ See [https://chandler.io/software/2022/12/09/Hotfixing-ZipInputStream.html](http
 
 This repository contains a reflection-based [patch](https://github.com/cjgriscom/ZipInputStreamPatch64/blob/main/src/main/java/io/chandler/zip/patch64/ZipInputStreamPatch64.java) that reliably detects the bug and advances the stream to avoid interruption.
 
-A sample file which opens fine under most archives but fails under ``ZipInputStream`` is included here: [ContentTwo.zip](https://github.com/cjgriscom/ZipInputStreamPatch64/blob/main/src/test/resources/ContentTwo.zip)
+A sample file which opens fine under most archiving tools but fails under ``ZipInputStream`` is included here: [ContentTwo.zip](https://github.com/cjgriscom/ZipInputStreamPatch64/blob/main/src/test/resources/ContentTwo.zip)
 
 This ``ZipInputStream`` bug is known to affect the following JDKs:
  - JDK 1.8.0_341
